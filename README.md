@@ -13,3 +13,10 @@ The box office sales and Detroit TV audience projects were done for a regression
 
 ### 3DMaze--March 2018
 I created a 3D Maze using C++ for a Data Structures class at BYU.
+
+
+
+
+#### Contact Information
+##### Brandon Sucher 
+##### brandonsucher1@gmail.com
