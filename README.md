@@ -1,22 +1,12 @@
-## Brandon Sucher's Code Repository
+# NBA-Best
 
-#### I've included four different folders of code that show a variety of projects I have worked on over the past few years. Below I explain what each of these folders contains.
+The application NBA Best looks at NBA player statistics and salaries to put together a 5-man roster based on user input for variables such as number of players at each position, budget, and player statistic priorities.
 
-### Statsketball_Competition--March 2019
-*This is Statistics* hosts an annual competition for high school and undergraduate students to create a model that predicts the outcome of the NCAA Tournament. They have two competitions: predicting first round winners and predicting the best teams of the tournament. Here is a link to learn more in depth of how the competition was conducted: https://thisisstatistics.org/home-2/statsketball/ I won the undergraduate competition for predicting the best teams of the tournament, winning for both the men's and women's NCAA tournament. I have a Jupyter Notebook that uses Python to create a ratings system that determines the best teams of the tournament.
+# Data Acquisition
+We used the Beautiful Soup python library to parse data from the website "HoopsHype" for salary and player statistics for all NBA players in the year 2021-2022. If a player has salary information for the 2022-2023 basketball season, we also collected this information.
 
-### Python_Course--February-October 2019
-I was asked to create a Python course for the BYU Statistics Department. I have attached the code for a few of the homework assignments as well as the final project that I wrote for the course.
+# Model Function
+To find the best lineup based on the user's inputs, the model first finds the player with the highest value for each statistic based on position. The model then normalizes all of the statistics based on the maximum value for that statistic by player position. The statistics used in the model are Points, True Two Point Percentage, True Three Point Percentage, Free Throw Percentage, Defensive Rebounding, Offensive Rebounding, Assist to Turnover Ratio, Steals, and Blocks. All of these variables were pulled directly from the data source with the exceptions of the Assist to Turnover Ratio and the point percentage variables. The model uses the Assist and Turnover variables from the data source to calculate the Assist to Turnover Ratio. The model also calculates the True Two Point Percentage, True Three Point Percentage, and Free Throw Percentage values by multiplying the player's average for that type of shot by the player's attempted number of that type of shots, which are variables that come directly from the data source. The model then finds all of the different possible combinations of five players based on the players' positions and different numbers of players at each position, and then it finally selects the five best lineups from all the different player combinations based on the user's inputs regarding number of players at each position, budget, and the weight the user gives to each statistic.
 
-### R Class Projects--February-March 2018 and April 2019
-The box office sales and Detroit TV audience projects were done for a regression class at BYU. The home vs. away FT percentage project was done for a Bayesian statistics class at BYU. In this project, a classmate and I compared free throw percentages for home and away teams in college basketball for each stadium. 
-
-### 3DMaze--March 2018
-I created a 3D Maze using C++ for a Data Structures class at BYU.
-
-
-
-
-#### Contact Information
-##### Brandon Sucher 
-##### brandonsucher1@gmail.com
+# User Interaction
+To create his lineup, the user will first be prompted to put in the number of guards, forwards, and centers he would like on his team. He can put up to five players at any position but the total number of players at the three positions must add up to five. The user will then be prompted to put in which year he would like to look at for the players' salaries (2021-2022 or 2022-2023) and his salary budget. After these values are inputted, the user has the option to assign a weight to each player statistic to indicate the importance the user puts on each statistic relative to the other statistics. Each weight must be a number from 0 to 10. The default weight for each statistic is 1, while a weight of 0 takes that statistic out of the model. The user can choose to press 'Enter' for each prompt instead of adding weights. Once the user is done inputting values, the model will display the five best lineups that fit the user's budget and priorities, along with the total salary cost for each lineup. The model also displays a table with the following player statistics for each player on the best lineup given: average number of points, offensive rebounds, defensive rebounds, assists, turnovers, steals, and blocks per game.
