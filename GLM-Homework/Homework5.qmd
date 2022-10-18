@@ -1,0 +1,116 @@
+---
+title: "Homework 5"
+author: "Brandon Sucher"
+format: docx
+editor: visual
+---
+
+The number of deaths from leukemia and other cancers among survivors of the Hiroshima atom bomb are shown in Table 7.12, classified by the radiation dose received.
+
+| Deaths            | 0   | 1-9 | 10-49 | 50-99 | 100-199 | 200+ |
+|-------------------|-----|-----|-------|-------|---------|------|
+| **Leukemia**      | 13  | 5   | 5     | 3     | 4       | 18   |
+| **Other Cancers** | 378 | 200 | 151   | 47    | 31      | 33   |
+| **Total Cancers** | 391 | 205 | 156   | 50    | 35      | 51   |
+
+#### (a) We want to obtain a suitable model to describe the dose-response relationship between radiation and the proportional cancer mortality rates for leukemia. Treat radiation dose as a continuous variable. Examples include using the middle or minimum dose such as
+
+| Radiation dose | Middle dose | Minimum dose |
+|----------------|-------------|--------------|
+| 0              | 0           | 0            |
+| 1-9            | 5           | 1            |
+| 10-49          | 29.5        | 10           |
+| 50-99          | 74.5        | 50           |
+| 100-199        | 149.5       | 100          |
+| 200+           | 250         | 200          |
+
+You can choose a different way to make a continuous radiation dose variable.
+
+Fit the model using three link functions: logit, probit, and complementary log-log. Provide a table containing comparison of observed and fitted values, model parameter estimates and their standard errors, deviances, and AIC values (see Table 7.4 on page 131).
+
+#### Read in data
+
+```{r}
+data <- data.frame(dose = c("0", "1-9", "10-49", "50-99", "100-199", "200+"),
+                   middle = c(0, 5, 29.5, 74.5, 149.5, 250),
+                   deaths = c(13, 5, 5, 3, 4, 18),
+                   total = c(391, 205, 156, 50, 35, 51))
+
+
+```
+
+#### Logit link function
+
+```{r}
+fit.logit <- glm(cbind(deaths, total - deaths) ~ middle, 
+                 family = binomial(link="logit"), 
+                 data = data)
+summary(fit.logit)
+
+fitted.y.logit <- round(data[,"total"] * fit.logit$fitted.values,
+                        digits = 2)
+fitted.y.logit
+```
+
+#### Probit link function
+
+```{r}
+fit.probit <- glm(cbind(deaths, total - deaths) ~ middle, 
+                 family = binomial(link="probit"), 
+                 data = data)
+summary(fit.probit)
+
+fitted.y.probit <- round(data[,"total"] * fit.probit$fitted.values,
+                        digits = 2)
+fitted.y.probit
+```
+
+#### Complementary log-log link function
+
+```{r}
+fit.cloglog <- glm(cbind(deaths, total - deaths) ~ middle, 
+                 family = binomial(link="cloglog"), 
+                 data = data)
+summary(fit.cloglog)
+
+fitted.y.cloglog <- round(data[,"total"] * fit.cloglog$fitted.values,
+                        digits = 2)
+fitted.y.cloglog
+```
+
+| Observed value of Y | Logit Link Model      | Probit Link Model | Cloglog Link Model |
+|---------------------|-----------------------|-------------------|--------------------|
+| 13                  | `r fitted.y.logit[1]` | 10.49             | 10.87              |
+| 5                   | 5.97                  | 5.89              | 6.01               |
+| 5                   | 5.98                  | 6.20              | 5.94               |
+| 3                   | 3.15                  | 3.43              | 3.06               |
+| 4                   | 4.83                  | 5.22              | 4.64               |
+| 18                  | 17.32                 | 16.80             | 17.54              |
+| $b_1$ **(s.e.)**    | -3.565 (0.212)        | -1.929 (0.092)    | -3.569 (0.208)     |
+| $b_2$ **(s.e.)**    | 0.012 (0.001)         | 0.006 (0.001)     | 0.011 (0.001)      |
+| **Deviance**        | 1.02                  | 1.52              | 0.88               |
+| **AIC**             | 26.69                 | 27.19             | 26.54              |
+
+#### (b) Which model does fit the data best?
+
+The model with the complementary log-log link function fits the data best as it has the lowest deviance and AIC values of the 3 models.
+
+#### (c) Interpret the results of the best model chosen in (b).
+
+```{r}
+pattern1 <- c(1, 74.5)
+pattern2 <- c(1, 29.5)
+
+eta1 <- as.vector(fit.cloglog$coef%*%pattern1)
+eta2 <- as.vector(fit.cloglog$coef%*%pattern2)
+
+p1 <- 1-exp(-exp(eta1))
+p2 <- 1-exp(-exp(eta2))
+
+odds1 <- p1 / (1-p1)
+odds2 <- p2 / (1-p2)
+
+odds1 / odds2
+```
+
+For this scenario, I compared the 10-49 rads radiation dose group to the 50-99 rads radiation dose group using the middle dose and calculated the odds ratio. The odds ratio is 1.647. Thus, in looking at these two dose groups, the odds of dying from leukemia vs other cancer is 64.7% higher in the 50-99 rads radiation dose group compared to the 10-49 rads radiation dose group.
