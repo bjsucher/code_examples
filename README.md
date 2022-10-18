@@ -2,6 +2,9 @@
 
 #### I've included six different folders of code that show a variety of projects I have worked on over the past few years. Below I explain what each of these folders contains.
 
+### GLM-Homework--October 2022
+This homework is from my Generalized Linear Models class at Duke. My main purpose in including this code is it is my first experience with Quarto markdown.
+
 ### NBA-Best--April 2022
 This project was from my Software Tools for Data Science class and I worked on it with two classmates. We pulled salary and game statistics data for NBA players to create a model that picks the optimal 5-man lineup based on user input. I created the parse files and built out most of the user interface. I also reviewed the model construction and testing files.
 
