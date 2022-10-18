@@ -1,0 +1,71 @@
+---
+title: "Project 2"
+author: "Brandon Sucher"
+date: "10/7/2021"
+output: word_document
+---
+
+```{r setup, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gapminder)
+library(ggplot2)
+library(tidyverse)
+library(wesanderson)
+library(viridis)
+```
+
+The code below manipulates the data to produce a plot that looks at population size by continent in the year 1997. The dot represents the mean and the bar on either side of the dot represents the 95% confidence interval. We use the Cavalcanti1 color palette from the Wes Anderson package to compare the continents.
+```{r}
+# Grab data and calculate mean, sd, and n for CIs
+popStats <- gapminder %>%
+            select(continent, year, pop) %>%
+            filter(year == 1997) %>%
+            group_by(continent, year) %>%
+            mutate(mean = mean(pop),
+                   sd = sd(pop),
+                   n = length(pop)) %>%
+            select(continent, mean, sd, n) %>%
+            unique()
+
+# Construct 95% confidence intervals
+CIlow <- popStats$mean - 1.96 * popStats$sd / sqrt(popStats$n)
+CIupp <- popStats$mean + 1.96 * popStats$sd / sqrt(popStats$n)
+
+# Need to set a value for the Wes Anderson palette to use in ggplot
+col <- wes_palette("Cavalcanti1")
+
+ggplot(popStats, aes(x = continent, y = mean, col = continent)) +
+  geom_point(size = 4) +
+  geom_pointrange(aes(ymin = CIlow, ymax = CIupp)) +
+  labs(x = "Continent", y = "Population Size",
+       title = "Population Size by Continent (1997)") +
+  scale_color_manual(values = col) +
+  theme_classic() +
+  theme(legend.position = "none")
+```
+
+This plot looks at life expectancy by GDP for all countries in the year 1997. We use the black and white theme and grab the plasma color palette from the viridis package (option = "C") to mark the continent of each country.
+```{r}
+ggplot(gapminder[gapminder$year == 1997, ],
+       aes(x = gdpPercap, y = lifeExp, col = continent)) +
+  geom_point(aes(size = pop), show.legend = c(col = TRUE,
+                                              size = FALSE)) +
+  labs(x = "GDP per capita ($)", y = "Life Expectancy (years)",
+       col = "Continent", title = "Life Expectancy by GDP (1997)") +
+  scale_color_viridis(discrete = TRUE, option = "C") +
+  theme_bw()
+```
+
+The code below produces a plot that looks at the life expectancy by GDP per capita for Denmark, Peru, Botswana, and Mongolia. GDP per capita is given in $ per thousands to make the plots easier to read. We also look at these data over time so earlier years are in lighter blue and darker blue dots are more recent years.
+```{r}
+ggplot(gapminder[gapminder$country %in% c("Denmark", "Peru",
+                                          "Botswana", "Mongolia"), ],
+       aes(x = gdpPercap / 1000, y = lifeExp, col = year)) +
+  geom_point(size = 3) +
+  facet_wrap(~country) +
+  scale_color_continuous(trans = "reverse") + # Reverses order of legend
+  labs(x = "GDP per capita ($ in thousands)", y = "Life Expectancy (years)",
+       col = "Year", title = "Life Expectancy by GDP (1952-2007)") +
+  theme_light()
+```
+

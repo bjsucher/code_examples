@@ -1,0 +1,206 @@
+---
+title: "Project 1"
+author: "Brandon Sucher"
+date: "9/7/2021"
+output: word_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(here)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(flextable)
+```
+
+Set the working directory and here() function
+```{r}
+setwd("C:/Users/brand/OneDrive - Duke University/BIOS_721/Project1")
+here::here()
+```
+
+Read in data sets
+```{r, message=FALSE}
+elData <- read_csv(here::here("Encounter Level Data.csv"))
+plData <- read_csv(here::here("Patient Level Data.csv"))
+```
+
+Merge the patient level data to the encounter level data
+```{r}
+allData <- left_join(elData, plData, by = "MRN")
+```
+
+The data set allData combines the patient data with the encounter data that tracks each patient's office and hospital visits. Each row of the data set represents an office or hospital visit of a patient, including personal data for each patient. There are 550 rows and 14 variables. The data set contains variables for the patient membership record number, the type of visit (Office or Hospital), and the date of that visit. From each visit, the patient temperature, distress score (0-7), WBC (0-54), and BMI are tracked. In addition to the patient visit data, variables for patient personal information are found in the data set, including date of birth, race, financial class, ethnicity, and whether they have the following pre-existing conditions: hypertension, CHF, diabetes.
+
+
+Check data cleaning issues
+```{r, results='hide'}
+summary(as.Date(allData$contact_date, "%m/%d/%Y"))
+table(allData$enc_type)
+summary(allData$temp)
+summary(allData$distress_score)
+summary(allData$WBC)
+boxplot(allData$WBC)
+summary(allData$BMI.r)
+summary(as.Date(allData$DOB, "%m/%d/%Y"))
+table(allData$race)
+table(allData$financialclass)
+table(allData$ethnicity)
+table(allData$hypertension)
+table(allData$CHF)
+table(allData$diabetes)
+```
+
+Notes from looking at each variable: 
+* About 10% of the observations are missing a distress score
+* About 13% of the observations are missing WBC
+* There appear to be outliers in the WBC variable. If we use the 1.5 IQR rule, then any row with a WBC greater than 20.28 would be an outlier. However, there seems to be a cluster of observations with WBC between 20 and 30, so only the two observations greater than 30 (37.98 and 53.6) were changed to missing values.  
+* 15.6% of the observations are missing a BMI There were 11 outliers (BMI < 5 or > 350) that were changed to missing, so 17.6% of observations have a null BMI.
+* There is one patient whose birth year is listed as 1889. Although I do not know for sure, it is very probable that this is a data entry error, so the patient's DOB was set to NA.
+
+
+Set outliers to be missing values
+```{r}
+allData$WBC[allData$WBC > 30] <- NA
+allData$BMI.r[allData$BMI.r < 5 | allData$BMI.r > 350] <- NA
+allData$DOB[allData$DOB == "7/22/1889"] <- NA
+```
+
+Round the temperature variable to one decimal place
+```{r}
+allData$tempRound <- round(allData$temp, digits = 1)
+```
+
+Re-categorize WBC into different levels
+```{r}
+allData <- allData %>% mutate(WBC_Level = 
+                                case_when(WBC < 3.2 ~ "Low",
+                                          WBC >= 3.2 & WBC <= 9.8 ~ "Normal",
+                                          WBC > 9.8 ~ "High",
+                                          is.na(WBC) ~ "Not Taken"))
+```
+
+Create frequency table of WBC levels
+```{r}
+wbcTable <- data.frame(table(allData$WBC_Level))
+colnames(wbcTable) <- c("WBC Level", "Frequency")
+flextable(wbcTable, cwidth = 1)
+```
+
+Create table of MRNs, dates, and temperatures > 100
+```{r}
+tempTable <- allData %>% select(MRN, contact_date, tempRound) %>%
+                         filter(tempRound > 100) %>% 
+                         arrange(MRN)
+colnames(tempTable) <- c("MRN", "Contact Date", "Temperature")
+flextable(tempTable, cwidth = 1.25)
+```
+
+Create table of mean BMI for MRNs CI6950, IW9164, HJ8458 & XE4615
+```{r}
+BMI_table <- allData %>% select(MRN, BMI.r) %>% 
+                         filter(MRN %in% c("CI6950", "IW9164", 
+                                           "HJ8458", "XE4615")) %>%
+                         group_by(MRN) %>% 
+                         summarise(mean_BMI = round(mean(BMI.r, na.rm = TRUE),
+                                                    digits = 1))
+colnames(BMI_table) <- c("MRN", "Mean BMI")
+flextable(BMI_table, cwidth = 1)
+```
+
+Create table showing how many hospital encounters each year
+```{r}
+encTable <- allData %>% select(contact_date, enc_type) %>% 
+                        group_by(year = year(as.Date(contact_date,
+                                                     "%m/%d/%Y"))) %>% 
+                        count(enc_type)
+colnames(encTable) <- c("Year", "Encounter Type", "Frequency")
+encTable$Year <- as.character(encTable$Year)
+flextable(encTable, cwidth = 1.5)
+```
+
+Calculate age of each patient at the start of the cohort
+```{r}
+allData$age_at_start <- floor(
+                          as.numeric(
+                            as.Date("2019-09-01") - 
+                            as.Date(allData$DOB, "%m/%d/%Y")
+                          ) / 365.25)
+```
+
+Summary statistics
+```{r}
+summary(allData$age_at_start)
+```
+At the start of the study, the average participant age was 42.49 years while the median age was 43. The youngest participant was 20 years old while the oldest participant was 71 years old.  
+
+
+Create table of counts & percentages of race, ethnicity, financial class, hypertension, congestive heart failure and diabetes.
+```{r}
+race <- allData %>% select(race) %>% 
+                    group_by(race) %>% 
+                    summarise(Count = n(),
+                              Percentage = round((n() / nrow(allData)) * 100,
+                                                 digits = 1))
+ethnicity <- allData %>% select(ethnicity) %>% 
+                         group_by(ethnicity) %>% 
+                         summarise(
+                           Count = n(),
+                           Percentage = round((n() / nrow(allData)) * 100,
+                                               digits = 1))
+finClass <- allData %>% select(financialclass) %>% 
+                        group_by(financialclass) %>% 
+                        summarise(
+                          Count = n(),
+                          Percentage = round((n() / nrow(allData)) * 100,
+                                              digits = 1))
+hypertension <- allData %>% select(hypertension) %>% 
+                            group_by(hypertension) %>% 
+                            summarise(
+                              Count = n(),
+                              Percentage = round((n() / nrow(allData)) * 100,
+                                                  digits = 1))
+hypertension$hypertension <- c("No", "Yes")
+chf <- allData %>% select(CHF) %>% 
+                   group_by(CHF) %>% 
+                   summarise(Count = n(),
+                             Percentage = round((n() / nrow(allData)) * 100,
+                                                 digits = 1))
+chf$CHF <- c("No", "Yes")
+diabetes <- allData %>% select(diabetes) %>% 
+                        group_by(diabetes) %>% 
+                        summarise(
+                          Count = n(),
+                          Percentage = round((n() / nrow(allData)) * 100,
+                                              digits = 1))
+diabetes$diabetes <- c("No", "Yes")
+varNames <- c("Race", "", "", "Ethnicity", "", "Financial Class", "", 
+              "Hypertension", "", "CHF", "", "Diabetes", "")
+classNames <- c("Black", "Other", "White", "Hispanic", "non-Hispanic",
+                "Medicare", "Private", "No", "Yes", "No", "Yes", "No", "Yes")
+finalTable <- rbind(race[,c(2,3)], ethnicity[,c(2,3)], finClass[,c(2,3)],
+                    hypertension[,c(2,3)], chf[,c(2,3)], diabetes[,c(2,3)])
+finalTable <- cbind(varNames, classNames, finalTable)
+
+ft <- flextable(finalTable, cwidth = 1.25)
+ft <- delete_part(ft, part = "header")
+ft <- add_header(x = ft, Count = "Count", Percentage = "Percentage")
+ft <- bold(x = ft, j = 1)
+ft <- theme_box(ft)
+ft
+```
+
+Create a histogram of the distress score
+```{r}
+qplot(allData$distress_score) +
+  labs(x = "Distress Score", y = "Frequency",
+       title = "Frequency of distress score in all medical visits") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+
+
+

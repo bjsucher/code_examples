@@ -1,0 +1,76 @@
+---
+title: "Project 3"
+author: "Brandon Sucher"
+date: "11/10/2021"
+output: word_document
+---
+
+```{r setup, warning=FALSE, message=FALSE}
+library(dplyr)
+library(flextable)
+setwd("C:/Users/brand/OneDrive - Duke University/BIOS_721/Project3")
+```
+
+This function reads in the dataset based on the year input into the function and then renames the columns and re-formats the date variable to be compatible in R. It then takes the average pollutant concentration of duplicate days and deletes duplicate rows. Finally, it changes any negative values to be 0 and creates a table displaying the minimum and maximum concentration for each pollutant.
+```{r}
+cleanData <- function(year) {
+  # Read in the data--paste0 function lets us put in the year into the csv name
+  dat <- read.csv(paste0("data/AQ_", year, ".csv"))
+
+  # Rename the columns
+  colnames(dat) <- c("Date", "CO_con", "units_CO", "PM2.5_con",
+                     "units_PM", "O3_con", "units_O3")
+
+  # Change the date variable to be class date in R
+  dat$Date <- as.Date(dat$Date, "%m/%d/%Y")
+
+  # Get average concentration for duplicate days and delete duplicate rows
+  dat <- dat %>% group_by(Date) %>%
+                 mutate("CO_con" = mean(CO_con),
+                        "PM2.5_con" = mean(PM2.5_con),
+                        "O3_con" = mean(O3_con)) %>%
+                 unique()
+
+  # Change negative values to be 0 for all pollutants
+  for (i in 1:nrow(dat)) {
+    if (dat$CO_con[i] < 0 & is.na(dat$CO_con[i]) == FALSE) {
+      dat$CO_con[i] <- 0
+    }
+    if (dat$PM2.5_con[i] < 0 & is.na(dat$PM2.5_con[i]) == FALSE) {
+      dat$PM2.5_con[i] <- 0
+    }
+    if (dat$O3_con[i] < 0 & is.na(dat$O3_con[i]) == FALSE) {
+      dat$O3_con[i] <- 0
+    }
+  }
+
+  # Grab the min and max value for each pollutant and put into table
+  mins <- c(min(dat$CO_con, na.rm = TRUE),
+            min(dat$PM2.5_con, na.rm = TRUE),
+            min(dat$O3_con, na.rm = TRUE))
+  maxs <- c(max(dat$CO_con, na.rm = TRUE),
+            max(dat$PM2.5_con, na.rm = TRUE),
+            max(dat$O3_con, na.rm = TRUE))
+  minMaxTable <- as.data.frame(rbind(mins, maxs))
+  minMaxTable <- cbind(c("Minimum", "Maximum"), minMaxTable)
+  colnames(minMaxTable) <- c("Value", "CO", "PM2.5", "O3")
+  ft <- flextable(minMaxTable, cwidth = 1)
+  ft <- delete_part(ft, "header")
+  ft <- add_header(ft, CO = "CO", PM2.5 = "PM2.5", O3 = "O3")
+  ft <- add_header_lines(ft, values =
+                           paste0("Min and Max of Each Pollutant in ",
+                                  as.character(year)))
+  ft <- bold(ft, j = 1)
+  ft <- theme_box(ft)
+  return(ft)
+}
+```
+
+\pagebreak
+Run the function for the years 2018-2020
+```{r}
+cleanData(2018)
+cleanData(2019)
+cleanData(2020)
+```
+
