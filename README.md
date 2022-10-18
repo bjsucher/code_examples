@@ -11,6 +11,9 @@ This project was an individual cumulative project in my Software Tools for Data 
 ### Final-Project-702--October-December 2021
 This project was an individual project for my Applied Biostatistical Methods I class. The code provided is basically the descriptive analysis and statistical tests that I had to conduct in order to complete this project. 
 
+### R-Class-Duke--August-December 2021
+These projects were the assignments completed in the Intro to Statistical Programming I (R) class at Duke. They cover a wide variety of R packages but focus mainly on creating production plots and tables. 
+
 ### Statsketball_Competition--March 2019
 *This is Statistics* hosts an annual competition for high school and undergraduate students to create a model that predicts the outcome of the NCAA Tournament. They have two competitions: predicting first round winners and predicting the best teams of the tournament. Here is a link to learn more in depth of how the competition was conducted: https://thisisstatistics.org/home-2/statsketball/ I won the undergraduate competition for predicting the best teams of the tournament, winning for both the men's and women's NCAA tournament. I have a Jupyter Notebook that uses Python to create a ratings system that determines the best teams of the tournament.
 
