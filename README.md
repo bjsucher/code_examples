@@ -1,6 +1,6 @@
 ## Brandon Sucher's Code Repository
 
-#### I've included six different folders of code that show a variety of projects I have worked on over the past few years. Below I explain what each of these folders contains.
+#### I've included nine different folders of code that show a variety of projects I have worked on over the past few years. Below I explain what each of these folders contains.
 
 ### GLM-Homework--October 2022
 This homework is from my Generalized Linear Models class at Duke. My main purpose in including this code is it is my first experience with Quarto markdown.
