@@ -1,6 +1,12 @@
 ## Brandon Sucher's Code Repository
 
-#### I've included four different folders of code that show a variety of projects I have worked on over the past few years. Below I explain what each of these folders contains.
+#### I've included six different folders of code that show a variety of projects I have worked on over the past few years. Below I explain what each of these folders contains.
+
+### NBA-Best--April 2022
+This project was from my Software Tools for Data Science class and I worked on it with two classmates. We pulled salary and game statistics data for NBA players to create a model that picks the optimal 5-man lineup based on user input. I created the parse files and built out most of the user interface. I also reviewed the model construction and testing files.
+
+### EHR-Project--January-March 2022
+This project was an individual cumulative project in my Software Tools for Data Science class. Throughout the class, I edited these files to conform to different data structures, so the files included are the final iteration of this project.
 
 ### Statsketball_Competition--March 2019
 *This is Statistics* hosts an annual competition for high school and undergraduate students to create a model that predicts the outcome of the NCAA Tournament. They have two competitions: predicting first round winners and predicting the best teams of the tournament. Here is a link to learn more in depth of how the competition was conducted: https://thisisstatistics.org/home-2/statsketball/ I won the undergraduate competition for predicting the best teams of the tournament, winning for both the men's and women's NCAA tournament. I have a Jupyter Notebook that uses Python to create a ratings system that determines the best teams of the tournament.
